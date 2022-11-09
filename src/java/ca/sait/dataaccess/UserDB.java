@@ -7,6 +7,7 @@ package ca.sait.dataaccess;
 import ca.sait.models.User;
 import java.sql.*;
 import java.util.*;
+import javax.persistence.*;
 
 /**
  *
@@ -14,139 +15,85 @@ import java.util.*;
  */
 public class UserDB {
     public ArrayList<User> getAll() throws SQLException {
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection conn = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         ArrayList<User> users = new ArrayList<>();
+        EntityManagerFactory emFactory = DBUtil.getEmFactory();
         
-        String sql = "SELECT * FROM user";
-        
+        EntityManager em = emFactory.createEntityManager();
         try {
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
-        
-            while(rs.next()) {
-                String email = rs.getString(1);
-                int active = rs.getInt(2);
-                String first = rs.getString(3);
-                String last = rs.getString(4);
-                String password = rs.getString(5);
-                int role = rs.getInt(6);
-                
-                User user = new User(email,active,first,last,password,role);
-                users.add(user);
-            }
+            users.addAll(em.createNamedQuery("User.findAll", User.class).getResultList());
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(conn);
+            em.close();
         }
         return users;
     }
     
     public User get(String emailSearch) throws SQLException {
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection conn = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        User user = null;
+        User user;
+        EntityManagerFactory emFactory = DBUtil.getEmFactory();
         
-        String sql = "SELECT * FROM user WHERE email = ?";
+        EntityManager em = emFactory.createEntityManager();
         
         try {
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, emailSearch);
-            rs = ps.executeQuery();
-        
-            rs.next();
-            String email = rs.getString(1);
-            int active = rs.getInt(2);
-            String first = rs.getString(3);
-            String last = rs.getString(4);
-            String password = rs.getString(5);
-            int role = rs.getInt(6);
-            user = new User(email,active,first,last,password,role);
+            user = em.find(User.class, emailSearch);
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(conn);
+            em.close();
         }
         return user;
     }
     
     public void add(User user) throws SQLException{
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection conn = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        EntityManagerFactory emFactory = DBUtil.getEmFactory();
         
-        String sql = "INSERT into user VALUES (?,?,?,?,?,?)";
+        EntityManager em = emFactory.createEntityManager();
+        
+        EntityTransaction trans = em.getTransaction();
         
         try {
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, user.getEmail());
-            ps.setInt(2, user.getActive());
-            ps.setString(3, user.getFirstName());
-            ps.setString(4, user.getLastName());
-            ps.setString(5, user.getPassword());
-            ps.setInt(6, user.getRole());
-            ps.executeUpdate();
+            trans.begin();
+            em.persist(user);
+            trans.commit();
+        } catch (Exception ex) {
+            trans.rollback();
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(conn);
+            em.close();
         }
         
     }
     
     public void update(User user) throws SQLException {
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection conn = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        EntityManagerFactory emFactory = DBUtil.getEmFactory();
         
-        String sql = "UPDATE user SET "
-                     + "active = ?, "
-                     + "first_name = ?, "
-                     + "last_name = ?, "
-                     + "password = ?, "
-                     + "role = ? "
-                     + "WHERE email = ?";
+        EntityManager em = emFactory.createEntityManager();
+        
+        EntityTransaction trans = em.getTransaction();
         
         try {
-            ps = conn.prepareStatement(sql);
-            ps.setInt(1, user.getActive());
-            ps.setString(2, user.getFirstName());
-            ps.setString(3, user.getLastName());
-            ps.setString(4, user.getPassword());
-            ps.setInt(5, user.getRole());
-            ps.setString(6, user.getEmail());
-            ps.executeUpdate();
+            trans.begin();
+            em.merge(user);
+            trans.commit();
+        } catch (Exception ex) {
+            trans.rollback();
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(conn);
+            em.close();
         }
         
     }
     
     public void delete(User user) throws SQLException {
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection conn = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        EntityManagerFactory emFactory = DBUtil.getEmFactory();
         
-        String sql = "DELETE FROM user WHERE email = ?";
+        EntityManager em = emFactory.createEntityManager();
+        
+        EntityTransaction trans = em.getTransaction();
         
         try {
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, user.getEmail());
-            ps.executeUpdate();
+            trans.begin();
+            em.remove(user);
+            trans.commit();
+        } catch (Exception ex) {
+            trans.rollback();
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(conn);
+            em.close();
         }
     }
 }

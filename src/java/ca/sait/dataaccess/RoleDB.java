@@ -7,6 +7,7 @@ package ca.sait.dataaccess;
 import ca.sait.models.Role;
 import java.util.*;
 import java.sql.*;
+import javax.persistence.*;
 
 /**
  *
@@ -14,55 +15,31 @@ import java.sql.*;
  */
 public class RoleDB {
     public String get(int id) throws SQLException{
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection conn = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        String roleDescription;
+        Role role;
+        EntityManagerFactory emFactory = DBUtil.getEmFactory();
         
-        String sql = "SELECT role_name FROM role WHERE role_id = ?";
+        EntityManager em = emFactory.createEntityManager();
         
         try {
-            ps = conn.prepareStatement(sql);
-            ps.setInt(1, id);
-            rs = ps.executeQuery();
-        
-            rs.next();
-            roleDescription = rs.getString(1);
+            role = em.find(Role.class, id);
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(conn);
+            em.close();
         }
-        return roleDescription;
+        return role.getName();
         
         
     }
     
     public ArrayList<Role> getAll() throws SQLException {
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection conn = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         ArrayList<Role> roles = new ArrayList<>();
+        EntityManagerFactory emFactory = DBUtil.getEmFactory();
         
-        String sql = "SELECT * FROM role";
+        EntityManager em = emFactory.createEntityManager();
         
         try {
-            ps = conn.prepareStatement(sql);
-            rs = ps.executeQuery();
-        
-            while(rs.next()) {
-                int roleId = rs.getInt(1);
-                String roleDescription = rs.getString(2);
-                
-                Role role = new Role(roleId, roleDescription);
-                roles.add(role);
-            }
+            roles.addAll(em.createNamedQuery("Role.findAll", Role.class).getResultList());
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(conn);
+            em.close();
         }
         return roles;
     }
