@@ -81,7 +81,7 @@ public class UserServlet extends HttpServlet {
         RoleService roleService = new RoleService();
         ArrayList<User> users = userService.getAll();
         ArrayList<Role> roles = roleService.getAll();
-        int inputActiveInt;
+        boolean inputActiveBool;
         
         if (action != null && action.equals("addUser")) {
 
@@ -94,19 +94,20 @@ public class UserServlet extends HttpServlet {
 
             // Converts inputActive field to boolean
             if(inputActive != null && inputActive.equals("1")) {
-                inputActiveInt = 1;
+                inputActiveBool = true;
             } else {
-                inputActiveInt = 0;
+                inputActiveBool= false;
             }
 
             // Converts inputRole to Role.
-            int newRole = 0;
-            for (int i = 1; i <= roles.size(); i++) {
-                if (roleService.get(i).equals(inputRole)) {
-                    newRole = i;
+            Role newRole = null;
+            for (int i = 0; i < roles.size(); i++) {
+                if (roles.get(i).getRoleName().equals(inputRole)) {
+                    newRole = roles.get(i);
                 }
             }
-            User user = new User(inputEmail, inputActiveInt, inputFirstName, inputLastName, inputPassword, newRole);
+            User user = new User(inputEmail, inputActiveBool, inputFirstName, inputLastName, inputPassword);
+            user.setRole(newRole);
             userService.add(user);
             response.sendRedirect("user");
             return;
@@ -120,21 +121,17 @@ public class UserServlet extends HttpServlet {
             String role = request.getParameter("role");
             String active = request.getParameter("active");
             
-            if(active != null && active.equals("1")) {
-                inputActiveInt = 1;
-            } else {
-                inputActiveInt = 0;
-            }
+            inputActiveBool = active != null && active.equals("1");
 
-            int newRole = 0;
+            Role newRole = null;
             if (role.startsWith("Current:")) {
                 newRole = user.getRole();
             } else {
-                for (int i = 1; i <= roles.size(); i++) {
-                if (roleService.get(i).equals(role)) {
-                    newRole = i;
+                for (int i = 0; i < roles.size(); i++) {
+                    if (roles.get(i).getRoleName().equals(role)) {
+                        newRole = roles.get(i);
+                    }
                 }
-            }
             }
             
             
@@ -143,7 +140,7 @@ public class UserServlet extends HttpServlet {
             user.setLastName(lastName);
             user.setPassword(password);
             user.setRole(newRole);
-            user.setActive(inputActiveInt);
+            user.setActive(inputActiveBool);
 
             userService.update(user);
             request.setAttribute("editEnable", null);

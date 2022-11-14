@@ -14,18 +14,18 @@ import javax.persistence.*;
  * @author phamh
  */
 public class RoleDB {
-    public String get(int id) throws SQLException{
+    public String get(int roleId) throws SQLException{
         Role role;
         EntityManagerFactory emFactory = DBUtil.getEmFactory();
         
         EntityManager em = emFactory.createEntityManager();
         
         try {
-            role = em.find(Role.class, id);
+            role = em.find(Role.class, roleId);
         } finally {
             em.close();
         }
-        return role.getName();
+        return role.getRoleName();
         
         
     }

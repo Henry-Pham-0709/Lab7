@@ -86,9 +86,12 @@ public class UserDB {
         
         EntityTransaction trans = em.getTransaction();
         
+        User ref = em.find(User.class, user.getEmail());
+        
+        
         try {
             trans.begin();
-            em.remove(user);
+            em.remove(ref);
             trans.commit();
         } catch (Exception ex) {
             trans.rollback();

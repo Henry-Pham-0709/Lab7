@@ -29,7 +29,7 @@
                                     <th><c:out value="${user.getEmail()}"/></th>
                                     <th>
                                         <c:choose>
-                                            <c:when test="${user.getActive() == 1}">
+                                            <c:when test="${user.getActive() == true}">
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="checkbox" value="1" checked disabled>
                                                 </div>
@@ -43,7 +43,7 @@
                                     </th>
                                     <th><c:out value="${user.getFirstName()}"/></th>
                                     <th><c:out value="${user.getLastName()}"/></th>
-                                    <th><c:out value="${roleService.get(user.getRole())}"/></th>
+                                    <th><c:out value="${user.getRole().getRoleName()}"/></th>
                                     <th><a href="user?action=edit&user=${user.getEmail()}"><button type="button" class="btn btn-success">Edit</button></a></th>
                                     <th><a href="user?action=delete&user=${user.getEmail()}"><button type="button" class="btn btn-danger">Delete</button></a></th>
                                 </tr>
@@ -76,16 +76,16 @@
                         <div class="mb-3">
                             <label for="role"></label>
                             <select name="role" id="role" class="form-select">
-                                <option selected>Current: ${roleService.get(editUser.getRole())}</option>
+                                <option selected>Current: ${editUser.getRole().getRoleName()}</option>
                                 <c:forEach var="role" items="${roles}">
-                                    <option>${role.getName()}</option>
+                                    <option>${role.getRoleName()}</option>
                                 </c:forEach>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="active" class="form-check">Active</label>
                             <c:choose>
-                                <c:when test="${editUser.getActive() == 1}">
+                                <c:when test="${editUser.getActive() == true}">
                                     <div class="form-check">
                                         <input id="active" name="active" class="form-check-input" type="checkbox" value="1" checked>
                                     </div>
@@ -129,7 +129,7 @@
                         <select id="inputRole" name="inputRole" class="form-control">
                             <option selected>Select a role...</option>
                             <c:forEach var="role" items="${roles}">
-                                <option>${role.getName()}</option>
+                                <option>${role.getRoleName()}</option>
                             </c:forEach>
                         </select>
                     </div>
